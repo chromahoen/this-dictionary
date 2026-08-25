@@ -336,30 +336,6 @@ section .lede {
 .resolver .output.active { color: var(--fg); }
 .resolver .output .this-val { color: var(--accent); font-weight: bold; }
 
-/* ── WORD ART ────────────────────────────────────── */
-.wordart-section {
-  min-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-.wordart-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
-.wordart-content {
-  position: relative;
-  z-index: 2;
-  padding: 2rem;
-}
-
 /* ── LANGUAGE TABLE ──────────────────────────────── */
 .lang-table {
   width: 100%;
@@ -518,29 +494,6 @@ footer .this-big {
   .hero-word { font-size: 5rem; }
 }
 
-/* ── INTERACTIVE THIS TRAIL ──────────────────────── */
-.this-trail {
-  position: fixed;
-  pointer-events: none;
-  z-index: 9998;
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 700;
-  color: var(--accent);
-  opacity: 0;
-  transition: opacity 1s;
-  user-select: none;
-  text-shadow: 0 0 15px rgba(255,61,110,0.4);
-}
-
-/* ── GLOW DIVIDER ────────────────────────────────── */
-.glow-divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent), var(--accent4), var(--accent2), transparent);
-  margin: 2rem 0;
-  opacity: 0.5;
-}
-
 /* ── THIS RAIN SECTION ──────────────────────────── */
 .this-rain {
   position: relative;
@@ -602,32 +555,6 @@ footer .this-big {
   font-size: 0.8rem;
 }
 
-/* ── TYPEWRITER ─────────────────────────────────── */
-.typewriter-container {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: clamp(1.2rem, 3vw, 2rem);
-  color: var(--fg-dim);
-  text-align: center;
-  padding: 2rem;
-  min-height: 80px;
-}
-.typewriter-text {
-  display: inline;
-}
-.typewriter-cursor {
-  display: inline-block;
-  width: 3px;
-  height: 1.2em;
-  background: var(--accent);
-  animation: blink 1s step-end infinite;
-  vertical-align: text-bottom;
-  margin-left: 2px;
-}
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
 </style>
 </head>
 <body>
@@ -1019,20 +946,6 @@ list.map { it * 2 }  <span class="com">// it = each element</span>
   </div>
 </section>
 
-<!-- ═══════════════ WORD ART / TYPEWRITER ═══════════════ -->
-<div class="wordart-section" id="wordart">
-  <canvas class="wordart-canvas" id="wordartCanvas"></canvas>
-  <div class="wordart-content">
-    <div class="typewriter-container">
-      <span class="typewriter-text" id="typewriter"></span><span class="typewriter-cursor"></span>
-    </div>
-    <p style="color:var(--fg-dim);margin-top:1rem;font-style:italic;max-width:500px;position:relative;z-index:2">
-      The word doesn't mean anything without context.<br>
-      Neither do we.
-    </p>
-  </div>
-</div>
-
 <!-- ═══════════════ FOOTER ═══════════════ -->
 <footer>
   <div class="this-big">this.</div>
@@ -1100,7 +1013,20 @@ const wireObjects = [];
 const letterT = [[0,-1],[0,0],[0,1],[-1,1],[1,1]];
 const letterH = [[-1,-1],[-1,0],[-1,1],[0,0],[1,-1],[1,0],[1,1]];
 const letterI = [[0,-1],[0,0],[0,1],[0,1.5]];
-const letterS = [[-1,1],[0,1],[1,1],[1,0],[0,0],[-1,0],[-1,-1],[0,-1],[1,-1]];
+const letterS = [
+  // top curve
+  [-1,1],[0,1],[1,1],
+  // right side down (partial)
+  [1,0.5],
+  // middle
+  [0.5,0],[0,0],[-0.5,0],
+  // left side down (partial)
+  [-1,-0.5],
+  // bottom curve
+  [-1,-1],[0,-1],[1,-1],
+  // extra depth dots for curve feel
+  [0.8,0.8],[-0.8,0.8],[0.8,-0.8],[-0.8,-0.8],
+];
 const letters = [letterT, letterH, letterI, letterS];
 
 function makeWireCube(x, y, z, size, color) {
@@ -1263,94 +1189,6 @@ function animateRain() {
   });
 }
 animateRain();
-
-// ── TYPEWRITER ─────────────────────────────────────
-const typewriterEl = document.getElementById('typewriter');
-const typewriterPhrases = [
-  'this is the beginning.',
-  'this is not the end.',
-  'this is a placeholder.',
-  'this is a variable.',
-  'this is context-dependent.',
-  'this is a pointer.',
-  'this is a reference.',
-  'this is a deictic expression.',
-  'this is scope.',
-  'this is all there is.',
-  'this is this.',
-];
-let twIdx = 0, twCharIdx = 0, twDeleting = false;
-
-function typewriter() {
-  const phrase = typewriterPhrases[twIdx];
-  if (!twDeleting) {
-    typewriterEl.textContent = phrase.substring(0, twCharIdx + 1);
-    twCharIdx++;
-    if (twCharIdx === phrase.length) {
-      twDeleting = true;
-      setTimeout(typewriter, 2500);
-      return;
-    }
-  } else {
-    typewriterEl.textContent = phrase.substring(0, twCharIdx - 1);
-    twCharIdx--;
-    if (twCharIdx === 0) {
-      twDeleting = false;
-      twIdx = (twIdx + 1) % typewriterPhrases.length;
-    }
-  }
-  setTimeout(typewriter, twDeleting ? 40 : 80);
-}
-typewriter();
-
-// ── WORD ART CANVAS — floating "this" in bg ────────
-const waCanvas = document.getElementById('wordartCanvas');
-const waCtx = waCanvas.getContext('2d');
-const waColors = ['rgba(255,61,110,0.06)', 'rgba(0,229,255,0.05)', 'rgba(183,148,246,0.06)', 'rgba(255,217,61,0.04)'];
-let waParticles = [];
-
-function resizeWA() {
-  waCanvas.width = waCanvas.offsetWidth;
-  waCanvas.height = waCanvas.offsetHeight;
-}
-resizeWA();
-window.addEventListener('resize', resizeWA);
-
-class WAParticle {
-  constructor() { this.reset(); this.y = Math.random() * waCanvas.height; }
-  reset() {
-    this.x = Math.random() * waCanvas.width;
-    this.y = waCanvas.height + 20;
-    this.size = 20 + Math.random() * 50;
-    this.speed = 0.2 + Math.random() * 0.5;
-    this.color = waColors[Math.floor(Math.random() * waColors.length)];
-    this.rot = (Math.random() - 0.5) * 0.3;
-    this.drift = (Math.random() - 0.5) * 0.3;
-  }
-  update() {
-    this.y -= this.speed;
-    this.x += this.drift;
-    if (this.y < -50) this.reset();
-  }
-  draw() {
-    waCtx.save();
-    waCtx.translate(this.x, this.y);
-    waCtx.rotate(this.rot);
-    waCtx.font = `italic ${this.size}px Georgia`;
-    waCtx.fillStyle = this.color;
-    waCtx.fillText('this', 0, 0);
-    waCtx.restore();
-  }
-}
-
-for (let i = 0; i < 30; i++) waParticles.push(new WAParticle());
-
-function animateWA() {
-  requestAnimationFrame(animateWA);
-  waCtx.clearRect(0, 0, waCanvas.width, waCanvas.height);
-  waParticles.forEach(p => { p.update(); p.draw(); });
-}
-animateWA();
 
 // ── THIS RESOLVER ──────────────────────────────────
 const contexts = {
