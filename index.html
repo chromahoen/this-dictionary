@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>this — a comprehensive dictionary</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👉</text></svg>">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg-alt: #111118;
+  --fg: #e8e8f0;
+  --fg-dim: #8888a0;
+  --accent: #ff6b9d;
+  --accent2: #6bf0ff;
+  --accent3: #ffd96b;
+  --accent4: #a78bfa;
+  --card: #151522;
+  --border: #252535;
+  --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+  --sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --serif: 'Georgia', 'Times New Roman', serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ── NAV ─────────────────────────────────────────── */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(10,10,15,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+nav .logo {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--accent);
+  cursor: pointer;
+  letter-spacing: -0.02em;
+}
+
+nav .logo span { color: var(--fg-dim); font-weight: 400; }
+
+nav ul {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+  margin-left: auto;
+}
+
+nav a {
+  color: var(--fg-dim);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.3s;
+  white-space: nowrap;
+}
+
+nav a:hover { color: var(--fg); }
+nav a.active { color: var(--accent); }
+
+/* ── HERO ────────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-bg canvas { width: 100%; height: 100%; }
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 2rem;
+}
+
+.hero-word {
+  font-family: var(--serif);
+  font-size: clamp(5rem, 18vw, 14rem);
+  font-style: italic;
+  font-weight: 700;
+  line-height: 0.9;
+  background: linear-gradient(135deg, var(--accent), var(--accent4), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.04em;
+  animation: heroFloat 6s ease-in-out infinite;
+}
+
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0) rotate(-0.5deg); }
+  50% { transform: translateY(-15px) rotate(0.5deg); }
+}
+
+.hero-subtitle {
+  margin-top: 1.5rem;
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  color: var(--fg-dim);
+  font-style: italic;
+  max-width: 600px;
+}
+
+.hero-subtitle .pulse {
+  color: var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.hero-scroll {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--fg-dim);
+  font-size: 0.8rem;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(10px); }
+}
+
+/* ── SECTION FRAMEWORK ───────────────────────────── */
+section {
+  padding: 6rem 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+section h2 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+section h2 .num {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  color: var(--accent);
+  vertical-align: super;
+  margin-right: 0.5rem;
+}
+
+section .lede {
+  font-size: 1.1rem;
+  color: var(--fg-dim);
+  margin-bottom: 2.5rem;
+  font-style: italic;
+  max-width: 600px;
+}
+
+/* ── CARDS ───────────────────────────────────────── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.75rem;
+  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 30px rgba(255,107,157,0.1);
+}
+
+.card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card .icon {
+  font-size: 1.3rem;
+}
+
+.card p {
+  color: var(--fg-dim);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.card .tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+  background: rgba(255,107,157,0.1);
+  color: var(--accent);
+}
+
+.card .tag.blue { background: rgba(107,240,255,0.1); color: var(--accent2); }
+.card .tag.yellow { background: rgba(255,217,107,0.1); color: var(--accent3); }
+.card .tag.purple { background: rgba(167,139,250,0.1); color: var(--accent4); }
+
+/* ── CODE BLOCKS ─────────────────────────────────── */
+.code-block {
+  background: #08080d;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin: 1rem 0;
+  position: relative;
+}
+
+.code-block .lang {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  font-size: 0.7rem;
+  color: var(--fg-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.code-block .kw { color: #ff6b9d; }
+.code-block .fn { color: #6bf0ff; }
+.code-block .str { color: #ffd96b; }
+.code-block .com { color: #555568; font-style: italic; }
+.code-block .num { color: #a78bfa; }
+.code-block .this { color: #ff6b9d; font-weight: bold; }
+.code-block .arrow { color: #a78bfa; }
+.code-block .op { color: #8888a0; }
+
+/* ── THIS RESOLVER ───────────────────────────────── */
+.resolver {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-top: 1.5rem;
+}
+
+.resolver select, .resolver button {
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-alt);
+  color: var(--fg);
+  cursor: pointer;
+  margin: 0.25rem;
+}
+
+.resolver button {
+  background: var(--accent);
+  color: #000;
+  font-weight: 600;
+  border: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.resolver button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(255,107,157,0.3);
+}
+
+.resolver .output {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: #08080d;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  min-height: 60px;
+  color: var(--fg-dim);
+  transition: color 0.3s;
+}
+
+.resolver .output.active { color: var(--fg); }
+.resolver .output .this-val { color: var(--accent); font-weight: bold; }
+
+/* ── WORD ART ────────────────────────────────────── */
+.wordart-section {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.floating-this {
+  position: absolute;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  opacity: 0.15;
+  pointer-events: none;
+  animation: floatDrift 20s linear infinite;
+}
+
+@keyframes floatDrift {
+  0% { transform: translate(0,0) rotate(0deg); }
+  100% { transform: translate(100px,-200px) rotate(360deg); }
+}
+
+/* ── LANGUAGE TABLE ──────────────────────────────── */
+.lang-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.lang-table th, .lang-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.lang-table th {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fg-dim);
+}
+
+.lang-table td { font-size: 0.9rem; }
+.lang-table .word { font-weight: 700; color: var(--accent); }
+.lang-table .word.blue { color: var(--accent2); }
+.lang-table .word.green { color: #6bff8e; }
+.lang-table .word.orange { color: #ff9d6b; }
+.lang-table .word.purple { color: var(--accent4); }
+.lang-table .word.yellow { color: var(--accent3); }
+
+.lang-table tr:hover { background: var(--bg-alt); }
+
+/* ── QUOTES ──────────────────────────────────────── */
+.quote-block {
+  border-left: 3px solid var(--accent);
+  padding: 0.5rem 0 0.5rem 1.5rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: var(--fg-dim);
+}
+
+.quote-block .attr {
+  display: block;
+  margin-top: 0.5rem;
+  font-style: normal;
+  font-size: 0.8rem;
+  color: var(--fg-dim);
+  opacity: 0.7;
+}
+
+/* ── FOOTER ──────────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 4rem 2rem 2rem;
+  color: var(--fg-dim);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+footer .this-big {
+  font-family: var(--serif);
+  font-size: 3rem;
+  font-style: italic;
+  color: var(--accent);
+  opacity: 0.3;
+  margin-bottom: 1rem;
+}
+
+/* ── FUN SECTION ─────────────────────────────────── */
+.fun-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.fun-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: transform 0.3s;
+  cursor: default;
+}
+
+.fun-item:hover { transform: scale(1.05) rotate(-1deg); }
+
+.fun-item .emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+.fun-item .phrase { font-weight: 700; font-size: 1rem; margin-bottom: 0.25rem; }
+.fun-item .desc { font-size: 0.8rem; color: var(--fg-dim); }
+
+/* ── REVEAL ANIMATION ────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s, transform 0.8s;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── SCOPE VISUALIZER ────────────────────────────── */
+.scope-viz {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.8;
+  background: #08080d;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.scope-viz .scope-global { color: #8888a0; }
+.scope-viz .scope-obj { color: #6bf0ff; }
+.scope-viz .scope-arrow { color: #a78bfa; }
+.scope-viz .scope-this { color: #ff6b9d; font-weight: bold; }
+.scope-viz .scope-comment { color: #555568; }
+
+/* ── RESPONSIVE ──────────────────────────────────── */
+@media (max-width: 768px) {
+  nav { padding: 0.5rem 1rem; gap: 1rem; }
+  nav ul { gap: 0.75rem; }
+  nav a { font-size: 0.75rem; }
+  section { padding: 4rem 1rem; }
+  .hero-word { font-size: 5rem; }
+}
+
+/* ── THIS CURSOR ─────────────────────────────────── */
+.this-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background: var(--accent);
+  animation: blink 1s step-end infinite;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ── MARQUEE ─────────────────────────────────────── */
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-alt);
+}
+
+.marquee-track {
+  display: inline-block;
+  animation: marquee 30s linear infinite;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.5rem;
+  color: var(--fg-dim);
+}
+
+.marquee-track span { margin: 0 2rem; }
+.marquee-track .accent { color: var(--accent); }
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav>
+  <div class="logo" onclick="scrollTo({top:0,behavior:'smooth'})">this<span>.dictionary</span></div>
+  <ul>
+    <li><a href="#grammar">Grammar</a></li>
+    <li><a href="#programming">Programming</a></li>
+    <li><a href="#languages">Languages</a></li>
+    <li><a href="#scope">Scope</a></li>
+    <li><a href="#resolver">Resolver</a></li>
+    <li><a href="#fun">Fun</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<div class="hero">
+  <div class="hero-bg"><canvas id="heroCanvas"></canvas></div>
+  <div class="hero-content">
+    <div class="hero-word">this</div>
+    <div class="hero-subtitle">
+      A comprehensive dictionary of the most powerful word in English.<br>
+      It's a <span class="pulse">placeholder</span>. It's a <span class="pulse">variable</span>. It's got <span class="pulse">complicated scope</span>.
+    </div>
+  </div>
+  <div class="hero-scroll">↓ scroll to begin</div>
+</div>
+
+<!-- ═══════════════ MARQUEE ═══════════════ -->
+<div class="marquee">
+  <div class="marquee-track">
+    <span>this is fine</span>
+    <span class="accent">this means war</span>
+    <span>this is the way</span>
+    <span>this too shall pass</span>
+    <span class="accent">this is it</span>
+    <span>this is not a pipe</span>
+    <span>this is Sparta</span>
+    <span class="accent">this is your brain on drugs</span>
+    <span>this is the end</span>
+    <span>this is America</span>
+    <span class="accent">this is where we are now</span>
+    <span>this is fine</span>
+    <span class="accent">this means war</span>
+    <span>this is the way</span>
+    <span>this too shall pass</span>
+    <span class="accent">this is it</span>
+    <span>this is not a pipe</span>
+    <span>this is Sparta</span>
+    <span class="accent">this is your brain on drugs</span>
+    <span>this is the end</span>
+    <span>this is America</span>
+    <span class="accent">this is where we are now</span>
+  </div>
+</div>
+
+<!-- ═══════════════ §1 GRAMMAR ═══════════════ -->
+<section id="grammar" class="reveal">
+  <h2><span class="num">§1</span> This in English Grammar</h2>
+  <p class="lede">"This" is a demonstrative — it points. But what it points to depends on where it stands, who's speaking, and what came before. It is a deictic expression: its meaning is determined by context.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <span class="tag">Deictic</span>
+      <h3><span class="icon">👉</span> Pointing at something nearby</h3>
+      <p>"<strong>This</strong> is my house." The speaker gestures or indicates proximity — physical, temporal, or discourse-near. "This" contrasts with "that" (proximal vs. distal). The closest English equivalent to a pointer in C.</p>
+    </div>
+
+    <div class="card">
+      <span class="tag blue">Anaphoric</span>
+      <h3><span class="icon">↩️</span> Referring back</h3>
+      <p>"I saw a dog. <strong>This</strong> dog was huge." "This" reaches backward in the discourse to grab something already mentioned and hold it up for further comment. Like a backreference in regex.</p>
+    </div>
+
+    <div class="card">
+      <span class="tag yellow">Cataphoric</span>
+      <h3><span class="icon">↪️</span> Referring forward</h3>
+      <p>"<strong>This</strong> is what I think: we should leave." The pronoun appears before its referent. "This" promises content to come — a forward declaration. The speaker's equivalent of a function prototype.</p>
+    </div>
+
+    <div class="card">
+      <span class="tag purple">Dummy</span>
+      <h3><span class="icon">🎭</span> Dummy subject</h3>
+      <p>"<strong>This</strong> is ridiculous." There's no specific thing being pointed at — "this" fills the subject position so the sentence can stand. It's syntactic scaffolding. It's <code>undefined</code> that happens to be grammatically required.</p>
+    </div>
+
+    <div class="card">
+      <span class="tag">Discourse marker</span>
+      <h3><span class="icon">💬</span> Conversation management</h3>
+      <p>"So, <strong>this</strong> happened." In spoken English, "this" often marks a new topic, a story opener, or a shift in conversation. It's less a pronoun and more a stage direction: "now entering: something new."</p>
+    </div>
+
+    <div class="card">
+      <span class="tag blue">Filler</span>
+      <h3><span class="icon">🫥</span> The placeholder</h3>
+      <p>"I was like, <strong>this</strong> close to winning." Sometimes "this" barely means anything — it hovers between adverb and gesture, doing the work of a word while being a shrug. It's the JavaScript <code>undefined</code> of natural language.</p>
+    </div>
+  </div>
+
+  <div class="quote-block">
+    "This is the most overworked word in the language. It's a pronoun, an adjective, an adverb, a discourse marker, and sometimes barely a word at all."
+    <span class="attr">— every linguist, exhausted</span>
+  </div>
+</section>
+
+<!-- ═══════════════ §2 PROGRAMMING ═══════════════ -->
+<section id="programming" class="reveal">
+  <h2><span class="num">§2</span> This in Programming</h2>
+  <p class="lede">Every major language has a <code>this</code> or <code>self</code> — and every one of them gets it wrong differently. The binding rules are the language's theory of context, and the bugs are where the theory meets reality.</p>
+
+  <div class="card-grid">
+    <!-- JavaScript -->
+    <div class="card">
+      <span class="tag">JavaScript</span>
+      <h3><span class="icon">🟡</span> JavaScript — the chaos one</h3>
+      <p>In JS, <code>this</code> is dynamically bound. Its value depends on <em>how the function was called</em>, not where it was defined. Arrow functions inherit it lexically. Regular functions rebind it. <code>.bind()</code>, <code>.call()</code>, and <code>.apply()</code> can override it. In strict mode it's <code>undefined</code> instead of the global object. Nobody fully understands it. We all just use arrow functions now.</p>
+      <div class="code-block">
+<span class="lang">javascript</span>
+<span class="kw">const</span> obj = {
+  name: <span class="str">'Alice'</span>,
+  greet() {
+    <span class="kw">return</span> <span class="this">this</span>.name  <span class="com">// → 'Alice'</span>
+  },
+  arrow: () =&gt; <span class="this">this</span>.name  <span class="com">// → undefined (lexical)</span>
+}
+
+obj.greet()                    <span class="com">// this = obj ✅</span>
+<span class="kw">const</span> g = obj.greet; g()       <span class="com">// this = undefined (strict) ❌</span>
+obj.greet.call({name:<span class="str">'Bob'</span>})      <span class="com">// this = {name:'Bob'} 🔄</span>
+      </div>
+    </div>
+
+    <!-- Python -->
+    <div class="card">
+      <span class="tag blue">Python</span>
+      <h3><span class="icon">🐍</span> Python — the explicit one</h3>
+      <p>Python doesn't have <code>this</code>. It has <code>self</code>, and you have to type it. Every. Single. Time. It's the first parameter of every method. It's not a keyword — it's a convention. You could call it <code>potato</code> and Python wouldn't care. But <code>self</code> is <em>always</em> explicitly there, staring at you from the parameter list, reminding you that nothing is free.</p>
+      <div class="code-block">
+<span class="lang">python</span>
+<span class="kw">class</span> Cat:
+    <span class="kw">def</span> __init__(<span class="this">self</span>, name):
+        <span class="this">self</span>.name = name
+
+    <span class="kw">def</span> greet(<span class="this">self</span>):
+        <span class="kw">return</span> f<span class="str">"I am {</span><span class="this">self</span><span class="str">}.name}"</span>
+
+c = Cat(<span class="str">'Whiskers'</span>)
+c.greet()  <span class="com"># → 'I am Whiskers'</span>
+
+<span class="com"># self is NOT a keyword. this works:</span>
+<span class="kw">class</span> Dog:
+    <span class="kw">def</span> bark(potato):  <span class="com"># 🥔</span>
+        <span class="kw">return</span> <span class="str">'woof'</span>
+      </div>
+    </div>
+
+    <!-- Java -->
+    <div class="card">
+      <span class="tag yellow">Java</span>
+      <h3><span class="icon">☕</span> Java — the reliable one</h3>
+      <p>In Java, <code>this</code> is lexically bound to the current instance. Always. No surprises, no dynamic rebinding, no arrow functions to save you. It just works. Boring, beautiful, predictable. The <code>this</code> you can take home to meet your parents.</p>
+      <div class="code-block">
+<span class="lang">java</span>
+<span class="kw">class</span> Person {
+    String name;
+    Person(String name) {
+        <span class="this">this</span>.name = name;  <span class="com">// disambiguation</span>
+    }
+    <span class="kw">void</span> introduce() {
+        System.out.println(<span class="str">"I am "</span> + <span class="this">this</span>.name);
+    }
+}
+      </div>
+    </div>
+
+    <!-- C++ -->
+    <div class="card">
+      <span class="tag purple">C++</span>
+      <h3><span class="icon">⚙️</span> C++ — the pointer one</h3>
+      <p>In C++, <code>this</code> is a <em>pointer</em>, not a reference. You write <code>this-&gt;member</code> or <code>(*this).member</code>. It can be <code>nullptr</code> if you do something terrible. In const member functions, <code>this</code> becomes <code>const</code>. C++ gives you power and then whispers: "please be careful." You will not be careful.</p>
+      <div class="code-block">
+<span class="lang">cpp</span>
+<span class="kw">struct</span> Widget {
+    <span class="kw">int</span> value;
+    <span class="kw">void</span> setValue(<span class="kw">int</span> v) {
+        <span class="this">this</span>-&gt;value = v;
+    }
+    <span class="kw">int</span> get() <span class="kw">const</span> {
+        <span class="kw">return</span> <span class="this">this</span>-&gt;value;  <span class="com">// this is const Widget*</span>
+    }
+    Widget& chain() {
+        <span class="kw">return</span> *<span class="this">this</span>;  <span class="com">// method chaining</span>
+    }
+};
+      </div>
+    </div>
+
+    <!-- Rust -->
+    <div class="card">
+      <span class="tag">Rust</span>
+      <h3><span class="icon">🦀</span> Rust — the &self one</h3>
+      <p>Rust doesn't use <code>this</code>. It uses <code>&self</code>, <code>&mut self</code>, or <code>self</code>. The reference type encodes borrowing rules directly into the method signature. You always know whether a method takes, borrows, or mutably borrows. The compiler engrades this at compile time. Resistance is futile.</p>
+      <div class="code-block">
+<span class="lang">rust</span>
+<span class="kw">struct</span> Counter { value: <span class="kw">i32</span> }
+
+<span class="kw">impl</span> Counter {
+    <span class="kw">fn</span> get(&<span class="this">self</span>) -&gt; <span class="kw">i32</span> {
+        <span class="this">self</span>.value
+    }
+    <span class="kw">fn</span> increment(&mut <span class="this">self</span>) {
+        <span class="this">self</span>.value += 1;
+    }
+    <span class="kw">fn</span> consume(<span class="this">self</span>) -&gt; <span class="kw">i32</span> {
+        <span class="this">self</span>.value  <span class="com">// moves ownership</span>
+    }
+}
+      </div>
+    </div>
+
+    <!-- Go -->
+    <div class="card">
+      <span class="tag blue">Go</span>
+      <h3><span class="icon">🐹</span> Go — the receiver one</h3>
+      <p>Go has no <code>this</code> and no <code>self</code>. Methods are just functions with a <em>receiver</em>, and you name it whatever you want. Convention says use a short abbreviation of the type name. It's democratic, unopinionated, and slightly disorienting.</p>
+      <div class="code-block">
+<span class="lang">go</span>
+<span class="kw">type</span> Server <span class="kw">struct</span> { port <span class="kw">int</span> }
+
+<span class="kw">func</span> (s Server) Port() <span class="kw">int</span> {
+    <span class="kw">return</span> s.port  <span class="com">// s, not this</span>
+}
+
+<span class="kw">func</span> (s *Server) SetPort(p <span class="kw">int</span>) {
+    s.port = p
+}
+      </div>
+    </div>
+
+    <!-- C# -->
+    <div class="card">
+      <span class="tag yellow">C#</span>
+      <h3><span class="icon">🔷</span> C# — the extension one</h3>
+      <p>C# has <code>this</code> like Java, but also <em>extension methods</em> via <code>this</code> as a modifier on the first parameter, and <em>indexers</em> via <code>this[]</code>. One keyword, three completely different jobs. Classic C#.</p>
+      <div class="code-block">
+<span class="lang">csharp</span>
+<span class="kw">class</span> Box {
+    <span class="kw">int</span>[] items;
+    <span class="kw">public</span> <span class="kw">int</span> <span class="kw">this</span>[<span class="kw">int</span> i] {  <span class="com">// indexer</span>
+        <span class="kw">get</span> =&gt; items[i];
+        <span class="kw">set</span> =&gt; items[i] = <span class="kw">value</span>;
+    }
+}
+<span class="com">// extension method — 'this' as modifier</span>
+<span class="kw">static</span> <span class="kw">void</span> Shout(<span class="kw">this</span> <span class="kw">string</span> s) =&gt; Console.Write(s.ToUpper());
+      </div>
+    </div>
+
+    <!-- Ruby -->
+    <div class="card">
+      <span class="tag purple">Ruby</span>
+      <h3><span class="icon">💎</span> Ruby — the implicit one</h3>
+      <p>In Ruby, <code>self</code> is implicit. You don't write <code>self.method</code> — you just write <code>method</code> and Ruby figures it out. <code>self</code> appears only when you need it for disambiguation or when defining class methods. It's there even when you don't see it. It's always watching.</p>
+      <div class="code-block">
+<span class="lang">ruby</span>
+<span class="kw">class</span> User
+  <span class="kw">def</span> initialize(name)
+    @name = name  <span class="com"># @ prefix, no self needed</span>
+  <span class="kw">end</span>
+  <span class="kw">def</span> name
+    @name  <span class="com"># implicit self</span>
+  <span class="kw">end</span>
+  <span class="kw">def</span> <span class="this">self</span>.create(name)  <span class="com"># class method</span>
+    new(name)
+  <span class="kw">end</span>
+<span class="kw">end</span>
+      </div>
+    </div>
+
+    <!-- PHP -->
+    <div class="card">
+      <span class="tag">PHP</span>
+      <h3><span class="icon">🐘</span> PHP — the dollar one</h3>
+      <p>PHP uses <code>$this</code> — yes, with the dollar sign. It's a special variable, the only one that can't be reassigned. <code>self::</code> refers to the class, <code>static::</code> does late static binding. PHP has three words for "this" and none of them agree.</p>
+      <div class="code-block">
+<span class="lang">php</span>
+<span class="kw">class</span> Logger {
+    <span class="kw">private</span> $level;
+    <span class="kw">function</span> __construct($level) {
+        <span class="this">$this</span>-&gt;level = $level;
+    }
+    <span class="kw">function</span> log($msg) {
+        echo <span class="this">$this</span>-&gt;level . <span class="str">': '</span> . $msg;
+    }
+}
+      </div>
+    </div>
+
+    <!-- Swift -->
+    <div class="card">
+      <span class="tag blue">Swift</span>
+      <h3><span class="icon">🦅</span> Swift — the optional one</h3>
+      <p>Swift uses <code>self</code> like Python, but it's actually a keyword — not a convention. You mostly don't need it (Swift infers it), but closures capture <code>self</code> explicitly with a capture list. And in escaping closures, <code>self.</code> is required. Unless you use <code>[weak self]</code>. Then it's optional. Then it might be <code>nil</code>. Then you use optional chaining. Then you question your career choices.</p>
+      <div class="code-block">
+<span class="lang">swift</span>
+<span class="kw">class</span> View {
+    <span class="kw">var</span> title = <span class="str">"Hello"</span>
+    <span class="kw">func</span> render() {
+        <span class="kw">let</span> t = title  <span class="com">// self inferred</span>
+        <span class="kw">let</span> closure = { [<span class="this">self</span>] <span class="kw">in</span>
+            print(<span class="this">self</span>.title)  <span class="com">// capture required</span>
+        }
+    }
+}
+      </div>
+    </div>
+
+    <!-- Kotlin -->
+    <div class="card">
+      <span class="tag yellow">Kotlin</span>
+      <h3><span class="icon">🟣</span> Kotlin — the it one</h3>
+      <p>Kotlin has <code>this</code> for the current receiver, but it also has <code>it</code> — the implicit name for a single-parameter lambda. <code>it</code> is what <code>this</code> wishes it could be: invisible, effortless, and always there when you need exactly one thing.</p>
+      <div class="code-block">
+<span class="lang">kotlin</span>
+<span class="kw">class</span> Builder {
+    <span class="kw">var</span> name = <span class="str">""</span>
+    <span class="kw">fun</span> build(block: Builder.() -&gt; Unit) {
+        <span class="this">this</span>.block()  <span class="com">// 'this' as receiver</span>
+    }
+}
+<span class="com">// 'it' — the cooler cousin</span>
+list.map { it * 2 }  <span class="com">// it = each element</span>
+      </div>
+    </div>
+
+    <!-- TypeScript -->
+    <div class="card">
+      <span class="tag purple">TypeScript</span>
+      <h3><span class="icon">🔷</span> TypeScript — the typed chaos</h3>
+      <p>TypeScript inherits all of JavaScript's <code>this</code> chaos, then tries to type it. You can declare <code>this: Type</code> as a parameter that doesn't actually exist. It's a phantom parameter — visible to the type checker, invisible at runtime. TypeScript's <code>this</code> typing is the language acknowledging the chaos and saying "I see you."</p>
+      <div class="code-block">
+<span class="lang">typescript</span>
+<span class="kw">interface</span> Btn { label: <span class="kw">string</span> }
+<span class="kw">function</span> handleClick(<span class="this">this</span>: Btn, e: Event) {
+    console.log(<span class="this">this</span>.label)  <span class="com">// typed!</span>
+}
+<span class="com">// this param is erased at runtime</span>
+<span class="com">// but TS knows it must be called with .call()</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ §3 LANGUAGES ═══════════════ -->
+<section id="languages" class="reveal">
+  <h2><span class="num">§3</span> This Across Languages</h2>
+  <p class="lede">Every language needs a way to point at something. Not all of them use a single word — some inflect by gender, some by distance, some by animacy. Here's how the world says "this."</p>
+
+  <table class="lang-table">
+    <thead>
+      <tr><th>Language</th><th>"This"</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Spanish</td><td class="word">esto</td><td>Neuter demonstrative. Also: este (masc), esta (fem), estos, estas. Three genders, two distances (este/ese/aquel).</td></tr>
+      <tr><td>French</td><td class="word blue">ceci</td><td>vs. cela/ça — "ceci" points to something near the speaker, "cela" to something near the listener or previously mentioned.</td></tr>
+      <tr><td>German</td><td class="word">dies</td><td>Also dieser (masc), diese (fem), dieses (neut), diese (plur). Four forms because of course.</td></tr>
+      <tr><td>Italian</td><td class="word blue">questo</td><td>vs. quello. Quest(a/o/i/e) = this, quell(a/o/i/e) = that. Gender + number agreement required.</td></tr>
+      <tr><td>Portuguese</td><td class="word">isto</td><td>Neuter. Also este/esta (near speaker), esse/essa (near listener), aquele/aquela (far). Three distances!</td></tr>
+      <tr><td>Russian</td><td class="word blue">это</td><td>Éto (neuter). Also этот (masc), эта (fem), эти (plur). No articles, but six cases of demonstratives.</td></tr>
+      <tr><td>Japanese</td><td class="word green">これ</td><td>Kore (near speaker), sore (near listener), are (far from both). Three-way distance — the Goldilocks system.</td></tr>
+      <tr><td>Korean</td><td class="word green">이것</td><td>Igeot (near speaker), geugeot (near listener), jeogeot (far). Same three-way as Japanese — they share the concept.</td></tr>
+      <tr><td>Chinese (Mandarin)</td><td class="word orange">这个</td><td>Zhège (this), nàge (that). Simple two-way system. No gender, no case, no agreement.</td></tr>
+      <tr><td>Arabic</td><td class="word">هذا</td><td>Hādhā (masc), hādhihi (fem), hādhāni (dual masc), hādtāni (dual fem), hā'ulā'i (plur). Gender + number + case.</td></tr>
+      <tr><td>Hindi</td><td class="word purple">यह</td><td>Yeh (this), woh (that). Also voh (that, far). Two-way distance, gendered adjectives agree.</td></tr>
+      <tr><td>Turkish</td><td class="word blue">bu</td><td>Bu (this), şu (that, near listener), o (that, far). Three-way distance. No gender. Agglutinative suffixes.</td></tr>
+      <tr><td>Hebrew</td><td class="word">זה</td><td>Zeh (masc), zot (fem), eleh (plur). Gendered. Also "zot" as discourse marker meaning "this is it."</td></tr>
+      <tr><td>Swahili</td><td class="word green">hii</td><td>Hii (this, class 9/10), hiki (class 7/8), huu (class 1/2)... 18 noun classes, each with its own "this."</td></tr>
+      <tr><td>Vietnamese</td><td class="word orange">này</td><td>"Đây" (here, this), "này" (this + classifier). No gender, no case, no conjugation. Tonal language — "này" with different tone = different word.</td></tr>
+      <tr><td>Esperanto</td><td class="word">ĉi tiu</td><td>"Ĉi tiu" = this one. "Tiu" = that one. "Ĉi" is a proximity particle. Designed to be simple — and it is.</td></tr>
+      <tr><td>Latin</td><td class="word blue">hic</td><td>Hic (masc), haec (fem), hoc (neut). Three-way distance: hic (near speaker), iste (near listener), ille (far). Five cases each.</td></tr>
+      <tr><td>Greek (Ancient)</td><td class="word purple">οὗτος</td><td>Houtos (masc), hautē (fem), touto (neut). Three distances, three genders, four cases. Linguists love it. Students fear it.</td></tr>
+      <tr><td>ASL</td><td class="word yellow">👆</td><td>Point at it. Index finger extended, palm facing. The most literal "this" — pure deixis, zero ambiguity.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="quote-block">
+    "In ASL, 'this' is just pointing. Every other language is trying to simulate pointing with sounds."
+    <span class="attr">— someone on the internet, probably</span>
+  </div>
+</section>
+
+<!-- ═══════════════ §4 SCOPE ═══════════════ -->
+<section id="scope" class="reveal">
+  <h2><span class="num">§4</span> The Scope of This</h2>
+  <p class="lede">In both English and programming, "this" has scope. Its reference shifts depending on where you are in the sentence, the conversation, or the call stack. Understanding scope is understanding <em>this</em>.</p>
+
+  <h3 style="margin-top:1.5rem;color:var(--accent2);font-size:1.1rem">English Scope</h3>
+  <div class="scope-viz">
+<span class="scope-comment">// Conversation scope</span>
+<span class="scope-global">[Speaker A]</span> "I bought <span class="scope-this">this</span> old typewriter."
+<span class="scope-global">[Speaker B]</span> "Oh nice, <span class="scope-this">that</span>'s cool."
+  <span class="scope-comment">↑ "that" because it's A's thing, not B's</span>
+
+<span class="scope-global">[Speaker A]</span> "But <span class="scope-this">this</span> key is stuck."
+  <span class="scope-comment">↑ "this" — narrowing scope to a part</span>
+
+<span class="scope-global">[Time passes. New conversation.]</span>
+<span class="scope-global">[Speaker A]</span> "Remember <span class="scope-this">that</span> typewriter?"
+  <span class="scope-comment">↑ "that" now — it's distant in time</span>
+<span class="scope-comment">// Scope shifted: spatial → temporal. Same object, different deictic.</span>
+  </div>
+
+  <h3 style="margin-top:2rem;color:var(--accent2);font-size:1.1rem">JavaScript Scope</h3>
+  <div class="scope-viz">
+<span class="scope-comment">// Call stack scope</span>
+<span class="scope-global">globalThis</span>           <span class="scope-comment">// → window / global / undefined (strict)</span>
+  └─ <span class="scope-obj">obj.method()</span>        <span class="scope-comment">// this → obj</span>
+       └─ <span class="scope-obj">inner()</span>           <span class="scope-comment">// this → undefined (strict) ⚠️</span>
+            └─ <span class="scope-arrow">() =&gt;</span> <span class="scope-this">this</span>  <span class="scope-comment">// → inherits from inner() → undefined</span>
+  └─ <span class="scope-obj">obj.arrow = () =&gt;</span> <span class="scope-this">this</span>  <span class="scope-comment">// → globalThis (lexical!) ⚠️⚠️</span>
+       └─ <span class="scope-obj">anotherObj.run()</span>  <span class="scope-comment">// arrow doesn't rebind</span>
+            └─ <span class="scope-this">this</span>           <span class="scope-comment">// → still globalThis ⚠️⚠️⚠️</span>
+
+<span class="scope-comment">// Every layer can change what "this" means.</span>
+<span class="scope-comment">// English and JavaScript have the same problem:</span>
+<span class="scope-comment">// context determines meaning, and context is never obvious.</span>
+  </div>
+</section>
+
+<!-- ═══════════════ §5 RESOLVER ═══════════════ -->
+<section id="resolver" class="reveal">
+  <h2><span class="num">§5</span> This Resolver</h2>
+  <p class="lede">Pick a context. See what <code>this</code> resolves to. The answer might surprise you. (It usually won't. But sometimes it will.)</p>
+
+  <div class="resolver">
+    <label style="font-size:0.9rem;color:var(--fg-dim);display:block;margin-bottom:0.5rem">Choose a context:</label>
+    <select id="contextSelect">
+      <option value="">— select —</option>
+      <option value="global">Global scope (non-strict)</option>
+      <option value="strict">Global scope (strict mode)</option>
+      <option value="method">Object method</option>
+      <option value="detached">Detached method (assigned to variable)</option>
+      <option value="arrow">Arrow function in object</option>
+      <option value="arrow_nested">Arrow function in method</option>
+      <option value="constructor">Constructor call (new)</option>
+      <option value="call">.call() override</option>
+      <option value="bind">.bind() override</option>
+      <option value="event">DOM event handler</option>
+      <option value="class">Class method</option>
+      <option value="english_proximal">English: proximal deixis</option>
+      <option value="english_anaphoric">English: anaphoric reference</option>
+      <option value="english_dummy">English: dummy subject</option>
+    </select>
+    <button onclick="resolveThis()">Resolve this</button>
+    <div class="output" id="resolverOutput">Select a context and click resolve ↑</div>
+  </div>
+</section>
+
+<!-- ═══════════════ §6 FUN ═══════════════ -->
+<section id="fun" class="reveal">
+  <h2><span class="num">§6</span> This is Fun</h2>
+  <p class="lede">"This" in culture, memes, and the collective unconscious. Because a dictionary that isn't fun is just a list.</p>
+
+  <div class="fun-grid">
+    <div class="fun-item">
+      <span class="emoji">🔥</span>
+      <div class="phrase">this is fine</div>
+      <div class="desc">A dog in a burning room. The universal expression of functional collapse. The meme that defined a decade.</div>
+    </div>
+    <div class="fun-item">
+      <span class="emoji">⚔️</span>
+      <div class="phrase">this is Sparta</div>
+      <div class="desc">King Leonidas kicks a messenger into a well. The original "this is going great" energy.</div>
+    </div>
+    <div class="fun-item">
+      <span class="emoji">🛣️</span>
+      <div class="phrase">this is the way</div>
+      <div class="desc">The Mandalorian's creed. Also what every GPS says when it's confident and wrong.</div>
+    </div>
+    <div class="fun-item">
+      <span class="emoji">🎤</span>
+      <div class="phrase">this is it</div>
+      <div class="desc">Michael Jackson's final tour. Also what you say when you've reached the end and there's no turning back.</div>
+    </div>
+    <div class="fun-item">
+      <span class="emoji">🇺🇸</span>
+      <div class="phrase">this is America</div>
+      <div class="desc">Childish Gambino's masterpiece. A dance that becomes a warning that becomes a dance again.</div>
+    </div>
+    <div class="fun-item">
+      <span class="emoji">🚭</span>
+      <div class="phrase">this is your brain on drugs</div>
+      <div class="desc">An egg in a frying pan. The PSA that made every 90s kid think drugs = breakfast.</div>
+    </div>
+    <div class="fun-item">
+      <span class="emoji">🎷</span>
+      <div class="phrase">this is not a pipe</div>
+      <div class="desc">Magritte's painting of a pipe, captioned "this is not a pipe." It's a painting of a pipe. This is a paradox.</div>
+    </div>
+    <div class="fun-item">
+      <span class="emoji">🔚</span>
+      <div class="phrase">this is the end</div>
+      <div class="desc">The Doors. Also every season finale ever. Also what you say when the Git merge conflict has 47 files.</div>
+    </div>
+    <div class="fun-item">
+      <span class="emoji">🪦</span>
+      <div class="phrase">this too shall pass</div>
+      <div class="desc">Ancient wisdom attributed to everyone from Solomon to Rumi to that one friend who texts you at 3 AM.</div>
+    </div>
+    <div class="fun-item">
+      <span class="emoji">💀</span>
+      <div class="phrase">this means war</div>
+      <div class="desc">Bugs Bunny's line. Also what your codebase says when you touch the legacy module nobody wants to own.</div>
+    </div>
+    <div class="fun-item">
+      <span class="emoji">🧘</span>
+      <div class="phrase">this is water</div>
+      <div class="desc">David Foster Wallace's commencement speech. Two young fish swim past an older fish who says "morning, how's the water?" One young fish asks: "what the hell is water?"</div>
+    </div>
+    <div class="fun-item">
+      <span class="emoji">🤷</span>
+      <div class="phrase">this is where we are now</div>
+      <div class="desc">The sentence that explains every status meeting, every news cycle, and every relationship that's evolved past its original terms.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ WORD ART SECTION ═══════════════ -->
+<div class="wordart-section" id="wordart">
+  <div class="floating-this" style="top:10%;left:5%;font-size:4rem;animation-delay:0s">this</div>
+  <div class="floating-this" style="top:20%;right:10%;font-size:6rem;animation-delay:3s">this</div>
+  <div class="floating-this" style="bottom:15%;left:15%;font-size:3rem;animation-delay:7s">this</div>
+  <div class="floating-this" style="bottom:30%;right:20%;font-size:5rem;animation-delay:10s">this</div>
+  <div class="floating-this" style="top:40%;left:40%;font-size:7rem;animation-delay:5s">this</div>
+  <div class="floating-this" style="bottom:10%;right:5%;font-size:3.5rem;animation-delay:12s">this</div>
+  <div class="floating-this" style="top:60%;left:8%;font-size:2.5rem;animation-delay:8s">this</div>
+  <div class="floating-this" style="top:15%;left:55%;font-size:4.5rem;animation-delay:15s">this</div>
+  <div style="position:relative;z-index:1;text-align:center;padding:2rem">
+    <div style="font-family:var(--serif);font-size:clamp(2rem,5vw,4rem);font-style:italic;background:linear-gradient(135deg,var(--accent),var(--accent2),var(--accent4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">
+      this this this this this
+    </div>
+    <p style="color:var(--fg-dim);margin-top:1rem;font-style:italic;max-width:500px">
+      The word doesn't mean anything without context.<br>
+      Neither do we.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <div class="this-big">this.</div>
+  <p>A comprehensive dictionary of the word "this" — in English, in code, and in everything.</p>
+  <p style="margin-top:0.5rem;opacity:0.5">Built with ❤️ and an unreasonable amount of opinions about deictic expressions.</p>
+  <p style="margin-top:1rem;opacity:0.4;font-family:var(--mono);font-size:0.75rem">
+    this.website = this | this.is = a dictionary | this.end = true
+  </p>
+</footer>
+
+<!-- ═══════════════ SCRIPTS ═══════════════ -->
+<script>
+// ── Reveal on scroll ──────────────────────────────
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── Nav active link ────────────────────────────────
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.classList.remove('active');
+    if (a.getAttribute('href') === '#' + current) a.classList.add('active');
+  });
+});
+
+// ── Hero canvas: floating "this" particles ────────
+const canvas = document.getElementById('heroCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const fonts = ['italic 24px Georgia', 'italic 18px Georgia', 'italic 32px Georgia', 'italic 14px Georgia'];
+const colors = ['rgba(255,107,157,0.08)', 'rgba(107,240,255,0.06)', 'rgba(167,139,250,0.07)', 'rgba(255,217,107,0.05)'];
+
+class ThisParticle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = canvas.height + Math.random() * 200;
+    this.size = 14 + Math.random() * 24;
+    this.speed = 0.3 + Math.random() * 0.8;
+    this.opacity = 0.03 + Math.random() * 0.08;
+    this.colorIdx = Math.floor(Math.random() * colors.length);
+    this.fontIdx = Math.floor(Math.random() * fonts.length);
+    this.rotation = (Math.random() - 0.5) * 0.4;
+    this.drift = (Math.random() - 0.5) * 0.5;
+  }
+  update() {
+    this.y -= this.speed;
+    this.x += this.drift;
+    if (this.y < -50) this.reset();
+  }
+  draw() {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rotation);
+    ctx.font = `italic ${this.size}px Georgia`;
+    ctx.fillStyle = colors[this.colorIdx];
+    ctx.fillText('this', 0, 0);
+    ctx.restore();
+  }
+}
+
+for (let i = 0; i < 40; i++) particles.push(new ThisParticle());
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animate);
+}
+animate();
+
+// ── This Resolver ──────────────────────────────────
+const contexts = {
+  global: {
+    code: 'console.log(this)',
+    result: 'window  (or global in Node)',
+    note: 'In non-strict mode, this defaults to the global object. In browsers: window. In Node: global. It\'s the everything bucket.',
+  },
+  strict: {
+    code: '"use strict"; console.log(this)',
+    result: 'undefined',
+    note: 'Strict mode says: if you didn\'t bind this, you don\'t get it. undefined. No more implicit global. A clear improvement.',
+  },
+  method: {
+    code: 'const o = { name: "X", f() { return this.name } }; o.f()',
+    result: '"X"',
+    note: 'Called as o.f(), so this = o. The normal case. The case that makes sense.',
+  },
+  detached: {
+    code: 'const f = o.f; f()',
+    result: 'undefined (strict) / window (sloppy)',
+    note: 'The classic footgun. You assigned the method to a variable and called it bare. this is gone. This is why we can\'t have nice things.',
+  },
+  arrow: {
+    code: 'const o = { f: () => this }; o.f()',
+    result: 'window / globalThis',
+    note: 'Arrow functions don\'t have their own this. They inherit from the enclosing scope — which here is global. Arrows are lexical. Always.',
+  },
+  arrow_nested: {
+    code: 'const o = { f() { return (() => this)() } }; o.f()',
+    result: 'o  (the outer object)',
+    note: 'The arrow inherits this from f(), which was called as o.f(). So this = o. This is actually the GOOD use case for arrows — preserving this in callbacks.',
+  },
+  constructor: {
+    code: 'function Thing() { this.x = 1; } new Thing()',
+    result: '{ x: 1 }  (new object)',
+    note: 'new creates a fresh object and sets this to it. This is why constructors work. This is also why forgetting new is a bug.',
+  },
+  call: {
+    code: 'o.f.call({ name: "Y" })',
+    result: '"Y"',
+    note: '.call() explicitly sets this to the first argument. You\'re overriding the binding. You\'re in control now.',
+  },
+  bind: {
+    code: 'const g = o.f.bind({ name: "Z" }); g()',
+    result: '"Z"',
+    note: '.bind() creates a new function with this permanently set. Unlike .call(), it doesn\'t invoke — it returns a bound function. Permanent this.',
+  },
+  event: {
+    code: 'button.addEventListener("click", function() { console.log(this) })',
+    result: 'the button element',
+    note: 'In a regular function event handler, this = the element that fired the event. Convenient! But use an arrow and this = global. Less convenient.',
+  },
+  class: {
+    code: 'class C { m() { return this } } new C().m()',
+    result: 'the C instance',
+    note: 'Class methods behave like object methods — this = the instance. But class bodies are always strict mode. No escape.',
+  },
+  english_proximal: {
+    code: '"THIS is my favorite" (gesturing at something nearby)',
+    result: 'the thing being pointed at',
+    note: 'Proximal deixis. The speaker is physically or conceptually close to the referent. This is the pointing-this.',
+  },
+  english_anaphoric: {
+    code: '"I saw a cat. This cat was orange."',
+    result: 'the previously mentioned cat',
+    note: 'Anaphoric reference. "This" reaches backward to grab something from earlier in the discourse. A backreference in natural language.',
+  },
+  english_dummy: {
+    code: '"This is ridiculous."',
+    result: 'nothing specific — it\'s a placeholder',
+    note: 'Dummy subject. "This" fills the grammatical subject slot without pointing at anything concrete. It\'s syntactic scaffolding. It\'s this.',
+  },
+};
+
+function resolveThis() {
+  const select = document.getElementById('contextSelect');
+  const output = document.getElementById('resolverOutput');
+  const ctx_key = select.value;
+  if (!ctx_key) { output.textContent = 'Select a context first ↑'; output.classList.remove('active'); return; }
+  const data = contexts[ctx_key];
+  if (!data) return;
+  output.classList.add('active');
+  output.innerHTML =
+    '<div style="color:var(--accent2);margin-bottom:0.5rem">code:</div>' +
+    '<div style="color:var(--fg);margin-bottom:0.75rem">' + data.code.replace(/this/g, '<span style="color:var(--accent);font-weight:bold">this</span>') + '</div>' +
+    '<div style="color:var(--accent2);margin-bottom:0.25rem">this →</div>' +
+    '<div style="color:var(--accent3);font-weight:bold;margin-bottom:0.75rem">' + data.result + '</div>' +
+    '<div style="color:var(--fg-dim);font-style:italic">' + data.note + '</div>';
+}
+</script>
+
+</body>
+</html>
