@@ -1101,20 +1101,9 @@ function createThisWireframe(cx, cy, cz, scale, colorIdx, rotSpeed, opacity) {
   wireObjects.push(group);
 }
 
-// Create clusters at different depths/positions/sizes
-createThisWireframe(0, 0, 0, 1.0, 0, 0.3);        // center, pink
-createThisWireframe(-16, 5, -8, 0.55, 1, 0.5);     // upper left, cyan
-createThisWireframe(18, -3, -6, 0.6, 2, -0.4);      // right, purple
-createThisWireframe(-10, -7, -4, 0.4, 3, 0.6);     // lower left, yellow
-createThisWireframe(13, 9, -12, 0.7, 4, -0.3);      // upper right, green
-createThisWireframe(-22, -1, -18, 0.32, 0, 0.8);    // far left, small pink
-createThisWireframe(23, 4, -22, 0.4, 1, -0.6);     // far right, small cyan
-createThisWireframe(0, -13, -10, 0.5, 2, 0.4);     // bottom center, purple
-createThisWireframe(-7, 11, -5, 0.36, 3, -0.5);    // upper-mid left, yellow
-createThisWireframe(9, -11, -15, 0.42, 4, 0.7);    // lower right, green
-
-// Giant faint background "this" — very large, very faint, slow rotation
-createThisWireframe(0, 0, -30, 3.5, 0, 0.05, 0.08);  // huge faint pink, far back
+// Giant faint background "this" — the hero 3D element
+createThisWireframe(0, 0, -5, 3.0, 0, 0.08, 0.12);    // huge faint pink, behind content
+createThisWireframe(0, 0, -15, 2.0, 2, 0.05, 0.08);  // medium faint purple, further back
 
 // Mouse parallax
 let targetRotX = 0, targetRotY = 0;
