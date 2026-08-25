@@ -1088,6 +1088,7 @@ list.map { it * 2 }  <span class="com">// it = each element</span>
 </footer>
 
 <!-- ═══════════════ SCRIPTS ═══════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // ── Reveal on scroll ──────────────────────────────
 const observer = new IntersectionObserver((entries) => {
@@ -1109,58 +1110,128 @@ window.addEventListener('scroll', () => {
   });
 });
 
-// ── Hero canvas: floating "this" particles ────────
-const canvas = document.getElementById('heroCanvas');
-const ctx = canvas.getContext('2d');
-let particles = [];
+// ── Hero 3D: wireframe "this" with Three.js ────────
+const heroCanvas = document.getElementById('heroCanvas');
 
-function resizeCanvas() {
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, heroCanvas.offsetWidth / heroCanvas.offsetHeight, 0.1, 1000);
+camera.position.z = 30;
 
-const fonts = ['italic 24px Georgia', 'italic 18px Georgia', 'italic 32px Georgia', 'italic 14px Georgia'];
-const colors = ['rgba(255,107,157,0.08)', 'rgba(107,240,255,0.06)', 'rgba(167,139,250,0.07)', 'rgba(255,217,107,0.05)'];
+const renderer = new THREE.WebGLRenderer({ canvas: heroCanvas, alpha: true, antialias: true });
+renderer.setSize(heroCanvas.offsetWidth, heroCanvas.offsetHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-class ThisParticle {
-  constructor() { this.reset(); }
-  reset() {
-    this.x = Math.random() * canvas.width;
-    this.y = canvas.height + Math.random() * 200;
-    this.size = 14 + Math.random() * 24;
-    this.speed = 0.3 + Math.random() * 0.8;
-    this.opacity = 0.03 + Math.random() * 0.08;
-    this.colorIdx = Math.floor(Math.random() * colors.length);
-    this.fontIdx = Math.floor(Math.random() * fonts.length);
-    this.rotation = (Math.random() - 0.5) * 0.4;
-    this.drift = (Math.random() - 0.5) * 0.5;
-  }
-  update() {
-    this.y -= this.speed;
-    this.x += this.drift;
-    if (this.y < -50) this.reset();
-  }
-  draw() {
-    ctx.save();
-    ctx.translate(this.x, this.y);
-    ctx.rotate(this.rotation);
-    ctx.font = `italic ${this.size}px Georgia`;
-    ctx.fillStyle = colors[this.colorIdx];
-    ctx.fillText('this', 0, 0);
-    ctx.restore();
-  }
+// ── Build wireframe "this" text shapes ──────────────
+// We'll create boxes arranged as letter shapes, then wireframe them.
+// Each letter is built from a small grid of segments.
+
+const wireColors = [0xff6b9d, 0x6bf0ff, 0xa78bfa, 0xffd96b, 0x6bff8e];
+const wireObjects = [];
+
+// Helper: build a wireframe box (cube) at a position
+function makeWireCube(x, y, z, size, color) {
+  const geo = new THREE.BoxGeometry(size, size, size);
+  const edges = new THREE.EdgesGeometry(geo);
+  const mat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.6 });
+  const line = new THREE.LineSegments(edges, mat);
+  line.position.set(x, y, z);
+  return line;
 }
 
-for (let i = 0; i < 40; i++) particles.push(new ThisParticle());
+// Letter shapes as relative coordinates (each unit = 1 block)
+// t: vertical stem + horizontal crossbar
+const letterT = [[0,-1],[0,0],[0,1],[-1,1],[1,1]];
+// h: left stem + bump
+const letterH = [[-1,-1],[-1,0],[-1,1],[0,0],[1,-1],[1,0],[1,1]];
+// i: stem + dot
+const letterI = [[0,-1],[0,0],[0,1],[0,1.5]];
+// s: curve approximation
+const letterS = [[-1,1],[0,1],[1,1],[1,0],[0,0],[-1,0],[-1,-1],[0,-1],[1,-1]];
 
-function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach(p => { p.update(); p.draw(); });
-  requestAnimationFrame(animate);
+const letters = [letterT, letterH, letterI, letterS];
+
+// Create floating wireframe "this" clusters
+function createThisCluster(centerX, centerY, centerZ, scale, colorIdx, rotSpeed) {
+  const group = new THREE.Group();
+  const color = wireColors[colorIdx % wireColors.length];
+  const letterSpacing = 3.2 * scale;
+  const blockSize = 1.2 * scale;
+  const startX = centerX - (letters.length - 1) * letterSpacing / 2;
+
+  letters.forEach((letter, li) => {
+    const lx = startX + li * letterSpacing;
+    letter.forEach(([dx, dy]) => {
+      const cube = makeWireCube(lx + dx * scale, centerY + dy * scale, centerZ, blockSize, color);
+      group.add(cube);
+    });
+  });
+
+  group.userData = {
+    rotSpeed: rotSpeed,
+    floatPhase: Math.random() * Math.PI * 2,
+    centerX: centerX,
+    centerY: centerY,
+    centerZ: centerZ,
+    colorIdx: colorIdx,
+  };
+  scene.add(group);
+  wireObjects.push(group);
+  return group;
 }
-animate();
+
+// Place several "this" clusters at different depths and positions
+createThisCluster(0, 0, 0, 1.0, 0, 0.3);       // center, pink
+createThisCluster(-18, 6, -10, 0.6, 1, 0.5);    // upper left, cyan
+createThisCluster(20, -4, -8, 0.7, 2, -0.4);    // right, purple
+createThisCluster(-12, -8, -5, 0.5, 3, 0.6);    // lower left, yellow
+createThisCluster(15, 10, -15, 0.8, 4, -0.3);   // upper right, green
+createThisCluster(-25, -2, -20, 0.4, 0, 0.8);   // far left, small pink
+createThisCluster(25, 5, -25, 0.5, 1, -0.6);    // far right, small cyan
+createThisCluster(0, -15, -12, 0.6, 2, 0.4);    // bottom center, purple
+
+// Mouse interaction — rotate scene slightly toward mouse
+let mouseX = 0, mouseY = 0;
+let targetRotX = 0, targetRotY = 0;
+document.addEventListener('mousemove', (e) => {
+  mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+  mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+  targetRotY = mouseX * 0.15;
+  targetRotX = mouseY * 0.1;
+});
+
+// Resize handler
+function resizeRenderer() {
+  camera.aspect = heroCanvas.offsetWidth / heroCanvas.offsetHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(heroCanvas.offsetWidth, heroCanvas.offsetHeight);
+}
+window.addEventListener('resize', resizeRenderer);
+
+// Animation loop
+const clock = new THREE.Clock();
+function animate3D() {
+  requestAnimationFrame(animate3D);
+  const t = clock.getElapsedTime();
+
+  // Smoothly rotate scene toward mouse
+  scene.rotation.y += (targetRotY - scene.rotation.y) * 0.05;
+  scene.rotation.x += (targetRotX - scene.rotation.x) * 0.05;
+
+  // Each cluster rotates and floats independently
+  wireObjects.forEach((obj) => {
+    const d = obj.userData;
+    obj.rotation.y += d.rotSpeed * 0.01;
+    obj.rotation.x = Math.sin(t * 0.3 + d.floatPhase) * 0.15;
+    obj.position.y = d.centerY + Math.sin(t * 0.5 + d.floatPhase) * 1.5;
+    obj.position.x = d.centerX + Math.cos(t * 0.3 + d.floatPhase) * 0.8;
+  });
+
+  // Gentle camera drift
+  camera.position.z = 30 + Math.sin(t * 0.2) * 2;
+
+  renderer.render(scene, camera);
+}
+animate3D();
 
 // ── This Resolver ──────────────────────────────────
 const contexts = {
