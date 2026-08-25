@@ -956,8 +956,6 @@ list.map { it * 2 }  <span class="com">// it = each element</span>
 
 <!-- ═══════════════ SCRIPTS ═══════════════ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FontLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/TextGeometry.js"></script>
 <script>
 // ═══════════════════════════════════════════════════
 //  THIS.DICTIONARY — INSANE EDITION
@@ -997,7 +995,8 @@ document.addEventListener('mousemove', (e) => {
 });
 
 // ── 3D WIREFRAME HERO ───────────────────────────────
-// Real 3D extruded "this" text in wireframe, floating and spinning.
+// Wireframe "this" built from 3D line segments — no font dependency.
+// Each letter is defined as a set of stroke paths in 2D, then extruded into 3D.
 const heroCanvas = document.getElementById('heroCanvas');
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, heroCanvas.offsetWidth / heroCanvas.offsetHeight, 0.1, 1000);
@@ -1009,109 +1008,112 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 const wireColors = [0xff3d6e, 0x00e5ff, 0xb794f6, 0xffd93d, 0x4ade80];
 const wireObjects = [];
-let fontLoaded = false;
-let heroFont = null;
 
-// Fallback: wireframe boxes arranged as letter outlines (used until font loads)
-const letterDefs = {
-  t: [[0,-1.2],[0,-0.4],[0,0.4],[0,1.2],[-0.8,1.2],[0.8,1.2]],
-  h: [[-0.7,-1.2],[-0.7,-0.4],[-0.7,0.4],[-0.7,1.2],[0,0],[0.7,-1.2],[0.7,-0.4],[0.7,0.4],[0.7,1.2]],
-  i: [[0,-1.2],[0,-0.4],[0,0.4],[0,1.0],[0,1.3]],
-  s: [[-0.7,1.0],[0,1.2],[0.7,1.0],[0.7,0.4],[0,0],[-0.7,-0.4],[-0.7,-1.0],[0,-1.2],[0.7,-1.0]],
+// Letter stroke definitions — each letter is a list of polylines.
+// Each polyline is a list of [x, y] points. Strokes are drawn as connected lines.
+// Coordinates are in a 0-3 wide, 0-4 tall grid.
+const letterStrokes = {
+  // t: vertical stem + horizontal crossbar
+  t: [
+    [[1.5, 0], [1.5, 4]],       // stem
+    [[0.5, 3.5], [2.5, 3.5]],   // crossbar
+  ],
+  // h: two verticals + connecting bump
+  h: [
+    [[0, 0], [0, 4]],            // left stem
+    [[0, 2], [1.2, 2.8], [2.4, 2], [2.4, 0]],  // bump to right stem
+    [[2.4, 0], [2.4, 4]],       // right stem (but we do bump instead)
+  ],
+  // i: stem + dot
+  i: [
+    [[0.6, 0], [0.6, 3]],       // stem
+    [[0.6, 3.5], [0.6, 3.7]],   // dot (small segment, we'll make it a box)
+  ],
+  // s: S curve
+  s: [
+    [[2.4, 3.5], [0.3, 3.5], [0.3, 2.5], [2.4, 2], [2.4, 1], [0.3, 0.5], [0.3, 0]],  // S path
+  ],
 };
-const letterOrder = ['t','h','i','s'];
 
-function makeWireBox(x, y, z, size, color, opacity) {
-  const geo = new THREE.BoxGeometry(size, size, size);
-  const edges = new THREE.EdgesGeometry(geo);
-  const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: opacity || 0.6 });
-  const line = new THREE.LineSegments(edges, mat);
-  line.position.set(x, y, z);
-  return line;
-}
-
-function createThisClusterBoxes(cx, cy, cz, scale, colorIdx, rotSpeed) {
+// Build a letter as 3D line segments with depth (extrusion)
+function buildLetter(strokes, depth, color, opacity) {
   const group = new THREE.Group();
-  const color = wireColors[colorIdx % wireColors.length];
-  const letterSpacing = 2.0 * scale;
-  const blockSize = 0.65 * scale;
-  const startX = cx - (letterOrder.length - 1) * letterSpacing / 2;
+  const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: opacity || 0.75 });
 
-  letterOrder.forEach((ch, li) => {
-    const lx = startX + li * letterSpacing;
-    const pts = letterDefs[ch];
-    if (!pts) return;
-    pts.forEach(([dx, dy]) => {
-      group.add(makeWireBox(lx + dx * scale, cy + dy * scale, cz, blockSize, color, 0.5));
-    });
+  // Front face strokes (z = 0)
+  // Back face strokes (z = depth)
+  // Connect front to back at stroke endpoints
+  strokes.forEach(stroke => {
+    // Front
+    const frontPts = stroke.map(([x, y]) => new THREE.Vector3(x, y, 0));
+    const frontGeo = new THREE.BufferGeometry().setFromPoints(frontPts);
+    group.add(new THREE.Line(frontGeo, mat));
+
+    // Back
+    const backPts = stroke.map(([x, y]) => new THREE.Vector3(x, y, depth));
+    const backGeo = new THREE.BufferGeometry().setFromPoints(backPts);
+    group.add(new THREE.Line(backGeo, mat));
+
+    // Connect front-to-back at each point
+    for (let i = 0; i < stroke.length; i++) {
+      const connectPts = [
+        new THREE.Vector3(stroke[i][0], stroke[i][1], 0),
+        new THREE.Vector3(stroke[i][0], stroke[i][1], depth),
+      ];
+      const connectGeo = new THREE.BufferGeometry().setFromPoints(connectPts);
+      group.add(new THREE.Line(connectGeo, mat));
+    }
   });
 
-  group.userData = { rotSpeed, floatPhase: Math.random() * Math.PI * 2, cx, cy, cz, isText: false };
+  return group;
+}
+
+// Build full "this" word as 3D wireframe
+function createThisWireframe(cx, cy, cz, scale, colorIdx, rotSpeed) {
+  const group = new THREE.Group();
+  const color = wireColors[colorIdx % wireColors.length];
+  const depth = 0.6 * scale;
+
+  // Letter widths and spacing
+  const letterWidths = { t: 3, h: 2.4, i: 1.2, s: 2.7 };
+  const letterSpacing = 0.5 * scale;
+  const word = ['t', 'h', 'i', 's'];
+
+  let xOffset = 0;
+  const totalWidth = word.reduce((sum, ch) => sum + letterWidths[ch] * scale, 0) + (word.length - 1) * letterSpacing;
+  let cursor = cx - totalWidth / 2;
+
+  word.forEach(ch => {
+    const strokes = letterStrokes[ch];
+    if (!strokes) return;
+    // Scale and position the letter
+    const scaledStrokes = strokes.map(stroke =>
+      stroke.map(([x, y]) => [(x * scale) + cursor - cx, (y * scale - 2 * scale) + cy])
+    );
+    const letterGroup = buildLetter(scaledStrokes, depth, color, 0.75);
+    letterGroup.position.x = cursor;
+    letterGroup.position.y = cy;
+    letterGroup.position.z = cz;
+    group.add(letterGroup);
+    cursor += (letterWidths[ch] * scale) + letterSpacing;
+  });
+
+  group.userData = { rotSpeed, floatPhase: Math.random() * Math.PI * 2, cx, cy, cz };
   scene.add(group);
   wireObjects.push(group);
 }
 
-// Primary: real 3D text geometry
-function createThisText(cx, cy, cz, scale, colorIdx, rotSpeed) {
-  if (!heroFont) return;
-  const group = new THREE.Group();
-  const color = wireColors[colorIdx % wireColors.length];
-
-  const geo = new THREE.TextGeometry('this', {
-    font: heroFont,
-    size: 2.5 * scale,
-    height: 0.8 * scale,
-    curveSegments: 6,
-    bevelEnabled: false,
-  });
-  geo.computeBoundingBox();
-  const bbox = geo.boundingBox;
-  const centerOffset = -0.5 * (bbox.max.x - bbox.min.x);
-
-  // Wireframe edges
-  const edges = new THREE.EdgesGeometry(geo);
-  const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.75 });
-  const wire = new THREE.LineSegments(edges, mat);
-  wire.position.set(cx + centerOffset, cy - 1.2 * scale, cz);
-  group.add(wire);
-
-  // Also add a semi-transparent mesh for depth perception
-  const meshMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.04, side: THREE.DoubleSide });
-  const mesh = new THREE.Mesh(geo, meshMat);
-  mesh.position.set(cx + centerOffset, cy - 1.2 * scale, cz);
-  group.add(mesh);
-
-  group.userData = { rotSpeed, floatPhase: Math.random() * Math.PI * 2, cx, cy, cz, isText: true };
-  scene.add(group);
-  wireObjects.push(group);
-}
-
-// Load font, then create text clusters
-const fontLoader = new THREE.FontLoader();
-fontLoader.load('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/fonts/helvetiker_bold.typeface.json', (font) => {
-  heroFont = font;
-  fontLoaded = true;
-  // Clear fallback clusters
-  wireObjects.forEach(o => scene.remove(o));
-  wireObjects.length = 0;
-  // Create text clusters at different depths/positions
-  createThisText(0, 0, 0, 1.2, 0, 0.3);          // center, pink, large
-  createThisText(-16, 5, -8, 0.7, 1, 0.5);        // upper left, cyan
-  createThisText(18, -3, -6, 0.8, 2, -0.4);       // right, purple
-  createThisText(-10, -7, -4, 0.55, 3, 0.6);      // lower left, yellow
-  createThisText(13, 9, -12, 0.9, 4, -0.3);      // upper right, green
-  createThisText(-22, -1, -18, 0.45, 0, 0.8);     // far left, small pink
-  createThisText(23, 4, -22, 0.55, 1, -0.6);     // far right, small cyan
-  createThisText(0, -13, -10, 0.65, 2, 0.4);     // bottom center, purple
-  createThisText(-7, 11, -5, 0.5, 3, -0.5);      // upper-mid left, yellow
-  createThisText(9, -11, -15, 0.6, 4, 0.7);      // lower right, green
-});
-
-// Fallback clusters (shown immediately, replaced when font loads)
-createThisClusterBoxes(0, 0, 0, 1.2, 0, 0.3);
-createThisClusterBoxes(-16, 5, -8, 0.7, 1, 0.5);
-createThisClusterBoxes(18, -3, -6, 0.8, 2, -0.4);
-createThisClusterBoxes(-10, -7, -4, 0.55, 3, 0.6);
+// Create clusters at different depths/positions/sizes
+createThisWireframe(0, 0, 0, 1.0, 0, 0.3);        // center, pink
+createThisWireframe(-16, 5, -8, 0.55, 1, 0.5);     // upper left, cyan
+createThisWireframe(18, -3, -6, 0.6, 2, -0.4);      // right, purple
+createThisWireframe(-10, -7, -4, 0.4, 3, 0.6);     // lower left, yellow
+createThisWireframe(13, 9, -12, 0.7, 4, -0.3);      // upper right, green
+createThisWireframe(-22, -1, -18, 0.32, 0, 0.8);    // far left, small pink
+createThisWireframe(23, 4, -22, 0.4, 1, -0.6);     // far right, small cyan
+createThisWireframe(0, -13, -10, 0.5, 2, 0.4);     // bottom center, purple
+createThisWireframe(-7, 11, -5, 0.36, 3, -0.5);    // upper-mid left, yellow
+createThisWireframe(9, -11, -15, 0.42, 4, 0.7);    // lower right, green
 
 // Mouse parallax
 let targetRotX = 0, targetRotY = 0;
